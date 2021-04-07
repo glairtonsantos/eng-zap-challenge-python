@@ -4,7 +4,7 @@ from .client import SourceClient
 
 @app.route("/")
 def about():
-    description = {
+    return {
         "name": "Code Challenge Grupo ZAP",
         "version": "0.0.1",
         "about": (
@@ -13,7 +13,6 @@ def about():
         ),
         "license": "MIT",
     }
-    return description
 
 
 @app.route("/source/")
