@@ -41,3 +41,11 @@ class TestSourceClient(TestCase):
 
         self.assertTrue(status_code != status.HTTP_200_OK)
         self.assertIsInstance(res, str)
+
+    @mock.patch.dict(os.environ, {"URL_SOURCE": ""})
+    def test_get_source_without_url(self):
+        load_dotenv()
+        res, status_code = self.client.get_source()
+
+        self.assertTrue(status_code == status.HTTP_503_SERVICE_UNAVAILABLE)
+        self.assertEqual(res, "URL_SOURCE is not defined")
