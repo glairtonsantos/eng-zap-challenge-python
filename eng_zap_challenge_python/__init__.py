@@ -1,10 +1,5 @@
+from flask_api import FlaskAPI
 
-from flask import Flask
-from flask_cors import CORS
-from flask_dotenv import DotEnv
-
-app = Flask(__name__)
-
-CORS(app)
+app = FlaskAPI(__name__)
 
 from . import views
