@@ -12,9 +12,7 @@ def str2bool(v):
 def main():
     load_dotenv()  # take environment variables from .env.
     DEBUG = str2bool(os.environ.get("DEBUG", "False"))
-
-    if not source_client.data_source:
-        source_client.load_data_source()
+    source_client.load_data_source()
 
     app.run(debug=DEBUG)
 

@@ -90,15 +90,11 @@ class ZapFilter(BaseFilter):
             else self.VALUE_MIN_SALE
         )
 
-    def _is_eligible_rental(
-        self,
-    ) -> bool:
+    def _is_eligible_rental(self) -> bool:
         is_rental = self.is_rental()
         return is_rental and self._is_price_rental_minimal()
 
-    def _is_price_rental_minimal(
-        self,
-    ) -> bool:
+    def _is_price_rental_minimal(self) -> bool:
         value = self.process_dict("pricingInfos__rentalTotalPrice")
         return float(value) >= self.VALUE_MIN_RENTAL
 
