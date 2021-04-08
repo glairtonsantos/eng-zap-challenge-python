@@ -1,7 +1,8 @@
 import os
 import requests
+import logging
 from flask_api import status
-from requests.exceptions import ConnectionError, HTTPError
+from requests.exceptions import ConnectionError
 
 
 def try_connection(access):
@@ -9,29 +10,33 @@ def try_connection(access):
         try:
             return access(*args, **kwargs)
         except ConnectionError as err:
-            return (
-                {
-                    "message": f"error in conection with {err.request.url}",
-                    "erro_detail": str(err),
-                },
-                status.HTTP_503_SERVICE_UNAVAILABLE,
+            raise Exception(
+                f"error in conection with {err.request.url} detail: {str(err)}"
             )
 
     return wrapper
 
 
 class SourceClient:
+    data_source = []
+
     @try_connection
-    def get_source(self):
+    def load_data_source(self):
         URL_SOURCE = os.environ.get("URL_SOURCE")
 
         if URL_SOURCE:
+
+            logging.warning(f"wait...load source from {URL_SOURCE}")
             r = requests.get(URL_SOURCE)
+
             if r.status_code != status.HTTP_200_OK:
-                return r.text, r.status_code
+                raise Exception(
+                    f"Fail in load data source: status:{r.status_code} - {r.text}"
+                )
 
-            content = r.json()
+            self.data_source = r.json()
+        else:
+            raise Exception("URL_SOURCE is not defined in env")
 
-            return content, status.HTTP_200_OK
 
-        return "URL_SOURCE is not defined", status.HTTP_503_SERVICE_UNAVAILABLE
+source_client = SourceClient()

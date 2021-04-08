@@ -1,5 +1,9 @@
+from flask import request
 from . import app
-from .client import SourceClient
+from .filters import SourceFilter
+from .client import source_client
+
+# from .client import data_response
 
 
 @app.route("/")
@@ -15,10 +19,24 @@ def about():
     }
 
 
-@app.route("/source/")
-def source():
-    client = SourceClient()
+def paginate(result, page_size):
+    return [result[i : i + page_size] for i in range(0, len(result), page_size)]
 
-    res, status = client.get_source()
 
-    return {"content": res}, status
+@app.route("/properties/<context>/", methods=["GET"])
+def source(context):
+    source_filter = SourceFilter(context.lower(), source_client.data_source)
+    filtered = source_filter.filter()
+
+    page = request.args.get("page", 1)
+    page_size = request.args.get("page_size", 10)
+    paginated = paginate(filtered, int(page_size))[int(page) - 1] if filtered else []
+
+    response_data = {
+        "pageNumber": page,
+        "pageSize": len(paginated),
+        "totalCount": len(filtered),
+        "listings": paginated,
+    }
+
+    return (response_data, 200)
