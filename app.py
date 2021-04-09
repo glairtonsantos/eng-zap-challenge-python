@@ -1,20 +1,15 @@
-import os
 from dotenv import load_dotenv
-
-from eng_zap_challenge_python import app
+from flask_script import Manager
 from eng_zap_challenge_python.client import source_client
-
-
-def str2bool(v):
-    return v.lower() in ("yes", "true", "t", "1")
+from eng_zap_challenge_python import create_app
 
 
 def main():
     load_dotenv()  # take environment variables from .env.
-    DEBUG = str2bool(os.environ.get("DEBUG", "False"))
     source_client.load_data_source()
 
-    app.run(debug=DEBUG)
+    manager = Manager(create_app)
+    manager.run()
 
 
 if __name__ == "__main__":

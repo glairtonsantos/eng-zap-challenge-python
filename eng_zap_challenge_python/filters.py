@@ -2,6 +2,16 @@ from abc import ABC, abstractmethod
 from flask_api import exceptions
 
 
+def try_convert_float(access):
+    def wrapper(*args, **kwargs):
+        try:
+            return access(*args, **kwargs)
+        except ValueError:
+            return 0.0
+
+    return wrapper
+
+
 class BaseFilter(ABC):
 
     # Bounding Box Grupo ZAP
@@ -15,9 +25,9 @@ class BaseFilter(ABC):
 
     @abstractmethod
     def expressions(self) -> bool:
-        pass
+        raise NotImplementedError
 
-    def get_nested_dict(self, content, args):
+    def get_nested_dict(self, content, args, ignore_key=False, default=None):
         """
         return value in nested content by args splited:
         source = "keyA__keyB__keyC"
@@ -30,16 +40,32 @@ class BaseFilter(ABC):
             }
         """
         try:
-            return (
-                content[args[0]]
-                if len(args) == 1
-                else self.get_nested_dict(content[args[0]], args[1:])
-            )
+            if isinstance(content, dict):
+                if len(args) == 1:
+                    return content[args[0]]
+                else:
+                    return self.get_nested_dict(
+                        content[args[0]], args[1:], ignore_key, default
+                    )
+            else:
+                raise exceptions.APIException(
+                    detail="content is not dict valid. verify source processed"
+                )
         except KeyError:
-            pass
+            if ignore_key:
+                return default
 
-    def process_dict(self, source):
-        return self.get_nested_dict(self.content, source.split("__"))
+            raise exceptions.APIException(
+                detail=(
+                    f"content not found `{args[0]}`."
+                    " verify source definition"
+                )
+            )
+
+    def process_dict(self, source, ignore_key=False, default=None):
+        return self.get_nested_dict(
+            self.content, source.split("__"), ignore_key, default
+        )
 
     def inside_bounding_box(self) -> bool:
         location = "address__geoLocation__location"
@@ -83,9 +109,10 @@ class ZapFilter(BaseFilter):
         is_eligible_sale = self._is_eligible_sale()
         return is_eligible_rental or is_eligible_sale
 
+    @try_convert_float
     def _get_value_sale_minimal(self) -> float:
         return (
-            self.VALUE_MIN_SALE - self.VALUE_MIN_SALE * self.PER_BOUNDING_BOX
+            self.VALUE_MIN_SALE * (1 - self.PER_BOUNDING_BOX)
             if self.inside_bounding_box()
             else self.VALUE_MIN_SALE
         )
@@ -102,6 +129,7 @@ class ZapFilter(BaseFilter):
         value = self.process_dict("pricingInfos__price")
         return float(value) >= self._get_value_sale_minimal()
 
+    @try_convert_float
     def _get_value_usable_areas(self) -> float:
         value = self.process_dict("usableAreas")
         return float(value)
@@ -134,10 +162,10 @@ class VivaRealFilter(BaseFilter):
         eligible_sale = self._is_eligible_sale()
         return eligible_rental or eligible_sale
 
+    @try_convert_float
     def _get_value_rental_maximum(self) -> float:
-        value_percent = self.VALUE_MAX_RENTAL * self.PER_BOUNDING_BOX
         return (
-            self.VALUE_MAX_RENTAL + value_percent
+            self.VALUE_MAX_RENTAL * (1 + self.PER_BOUNDING_BOX)
             if self.inside_bounding_box()
             else self.VALUE_MAX_RENTAL
         )
@@ -153,6 +181,7 @@ class VivaRealFilter(BaseFilter):
     def _is_eligible_sale(self) -> bool:
         return self.is_sale() and self._is_price_sale_maximum()
 
+    @try_convert_float
     def _get_value_rental(self) -> float:
         value = self.process_dict("pricingInfos__rentalTotalPrice")
         return float(value)
@@ -166,13 +195,19 @@ class VivaRealFilter(BaseFilter):
         value = self.process_dict("pricingInfos__price")
         return float(value) <= self.VALUE_MAX_SALE
 
+    def _get_value_monthly_condo_fee(self):
+        """
+        if without key `monthlyCondoFee` return null
+        """
+        value = self.process_dict("pricingInfos__monthlyCondoFee", True)
+        return value
+
     def _is_valid_monthly_condo_fee(self) -> bool:
-        value = self.process_dict("pricingInfos__monthlyCondoFee")
+        value = self._get_value_monthly_condo_fee()
         return value is not None and value.isnumeric()
 
     def _is_value_monthly_condo_fee_maximum(self) -> bool:
-        source = "pricingInfos__monthlyCondoFee"
-        monthly_condo_fee_value = self.process_dict(source)
+        monthly_condo_fee_value = self._get_value_monthly_condo_fee()
         limit_condo_fee = self._get_value_rental() * self.PER_VALUE_RENTAL
         return float(monthly_condo_fee_value) < limit_condo_fee
 

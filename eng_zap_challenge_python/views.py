@@ -1,12 +1,11 @@
 from flask import request
-from flask_api import status
-from . import app
+from . import blueprint
 from .filters import SourceFilter
 from .client import source_client
 from .pagination import SourcePagination
 
 
-@app.route("/")
+@blueprint.route("/")
 def about():
     return {
         "name": "Code Challenge Grupo ZAP",
@@ -19,10 +18,11 @@ def about():
     }
 
 
-@app.route("/properties/<context>/", methods=["GET"])
+@blueprint.route("/properties/<context>/", methods=["GET"])
 def source(context):
+
     source_filter = SourceFilter(context.lower(), source_client.data_source)
     filtered = source_filter.filter()
     paginator = SourcePagination(request.args, filtered)
 
-    return (paginator.response(), status.HTTP_200_OK)
+    return paginator.response()

@@ -4,11 +4,16 @@ from unittest import TestCase, mock
 from dotenv import load_dotenv
 from eng_zap_challenge_python.client import source_client, try_connection
 
-URL_WRONG = "http://grupozap-code-challenge.s3-website-us-east-111.amazonaws.com/"
-URL_NOT_FOUND = "http://grupozap-code-challenge.s3-website-us-east-1.amazonaws.com/sources404/source-2.json"
+URL_WRONG = (
+    "http://grupozap-code-challenge.s3-website-us-east-111.amazonaws.com/"
+)
+URL_NOT_FOUND = (
+    "http://grupozap-code-challenge.s3-website-us-east-1.amazonaws.com/"
+    "sources404/source-2.json"
+)
 
 
-class TestSourceClient(TestCase):
+class SourceClientTest(TestCase):
     def setUp(self):
         self.client = source_client
 

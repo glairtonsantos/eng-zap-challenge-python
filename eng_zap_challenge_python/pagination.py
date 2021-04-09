@@ -21,11 +21,11 @@ class SourcePagination:
         """
         try:
             return [
-                self.data[i : i + self._get_page_size()]
+                self.data[i: i + self._get_page_size()]
                 for i in range(0, len(self.data), self._get_page_size())
             ]
-        except KeyError:
-            raise exceptions.NotFound
+        except ValueError:
+            raise exceptions.ParseError("query param `page_size` is invalid")
 
     def _get_paginated_data(self) -> list:
         splited_pages = self._split_pages()
