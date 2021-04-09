@@ -1,6 +1,16 @@
 from flask_api import exceptions
 
 
+def try_convert_int(access):
+    def wrapper(*args, **kwargs):
+        try:
+            return access(*args, **kwargs)
+        except ValueError:
+            raise exceptions.ParseError("query param is invalid value")
+
+    return wrapper
+
+
 class SourcePagination:
     PAGE_NUMBER = 1
     PAGE_SIZE = 50
@@ -9,9 +19,11 @@ class SourcePagination:
         self.args = args
         self.data = data
 
+    @try_convert_int
     def _page_number(self) -> int:
         return int(self.args.get("page", self.PAGE_NUMBER))
 
+    @try_convert_int
     def _get_page_size(self) -> int:
         return int(self.args.get("page_size", self.PAGE_SIZE))
 
