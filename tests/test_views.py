@@ -1,18 +1,14 @@
-import os
-from unittest import TestCase, mock
-from dotenv import load_dotenv
+from unittest import TestCase
 from flask_api import status
 from eng_zap_challenge_python.client import source_client
 from eng_zap_challenge_python import create_app
 
-URL_SOURCE = "http://grupozap-code-challenge.s3-website-us-east-1.amazonaws.com/sources/source-1.json"
+URL_SOURCE_1 = "http://grupozap-code-challenge.s3-website-us-east-1.amazonaws.com/sources/source-1.json"
 
 
 class SourceListTest(TestCase):
-    @mock.patch.dict(os.environ, {"URL_SOURCE": URL_SOURCE})
     def setUp(self):
-        load_dotenv()
-        source_client.load_data_source()
+        source_client.load_data_source(URL_SOURCE_1)
 
         self.app = create_app(config="test")
         self.client = self.app.test_client()

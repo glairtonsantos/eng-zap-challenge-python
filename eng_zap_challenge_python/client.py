@@ -1,8 +1,8 @@
-import os
 import requests
 import logging
 from flask_api import status
 from requests.exceptions import ConnectionError
+from . import URL_SOURCE
 
 
 def try_connection(access):
@@ -21,22 +21,24 @@ class SourceClient:
     data_source = []
 
     @try_connection
-    def load_data_source(self):
-        URL_SOURCE = os.environ.get("URL_SOURCE")
+    def load_data_source(self, url_source=URL_SOURCE):
 
-        if URL_SOURCE:
+        if url_source:
 
-            logging.warning(f"wait...load source from {URL_SOURCE}")
-            r = requests.get(URL_SOURCE)
+            logging.warning(f"wait...load source from {url_source}")
+            r = requests.get(url_source)
 
             if r.status_code != status.HTTP_200_OK:
                 raise Exception(
-                    f"Fail in load data source: status:{r.status_code} - {r.text}"
+                    (
+                        "Fail in load data source"
+                        f"status:{r.status_code} - {r.text}"
+                    )
                 )
 
             self.data_source = r.json()
         else:
-            raise Exception("URL_SOURCE is not defined in env")
+            raise Exception("URL_SOURCE is not defined")
 
 
 source_client = SourceClient()

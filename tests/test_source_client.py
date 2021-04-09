@@ -1,7 +1,5 @@
-import os
 import requests
-from unittest import TestCase, mock
-from dotenv import load_dotenv
+from unittest import TestCase
 from eng_zap_challenge_python.client import source_client, try_connection
 
 URL_WRONG = (
@@ -26,19 +24,16 @@ class SourceClientTest(TestCase):
         self.assertRaises(Exception, method_decorated)
 
     def test_get_source_success(self):
-        load_dotenv()
         self.client.load_data_source()
 
         self.assertIsInstance(self.client.data_source, list)
 
-    @mock.patch.dict(os.environ, {"URL_SOURCE": URL_NOT_FOUND})
     def test_get_source_error(self):
-        load_dotenv()
+        self.assertRaises(
+            Exception,
+            self.client.load_data_source,
+            URL_NOT_FOUND
+        )
 
-        self.assertRaises(Exception, self.client.load_data_source)
-
-    @mock.patch.dict(os.environ, {"URL_SOURCE": ""})
     def test_get_source_without_url(self):
-        load_dotenv()
-
-        self.assertRaises(Exception, self.client.load_data_source)
+        self.assertRaises(Exception, self.client.load_data_source, "")
