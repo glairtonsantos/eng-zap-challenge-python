@@ -6,6 +6,4 @@ from eng_zap_challenge_python.client import source_client
 load_dotenv()  # take environment variables from .env.
 source_client.load_data_source()
 manager = Manager(create_app)
-
-if __name__ == "__main__":
-    manager.run()
+app = create_app()
