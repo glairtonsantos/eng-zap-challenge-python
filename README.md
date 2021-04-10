@@ -116,12 +116,12 @@ para export o relatório em html
 ```
 python -m pytest --cov eng_zap_challenge_python/ --cov-report html
 ```
-após executar essa comando uma pasta `htmlcov` basta acessar e clicar no arquivo `index.html`
+após executar esse comando uma pasta `htmlcov/` será criada e basta acessar e clicar no arquivo `index.html`
 
 
 ## Como Publicar
 
-*OBS: Esse tutorial é para o Gunicorn, para o servidor Apache é necessário outros passos. [verifique aqui](https://flask.palletsprojects.com/en/1.1.x/deploying/mod_wsgi/])*
+*OBS: Esse tutorial é para o `Gunicorn`, para o servidor `Apache` com `mod_wsgi` é necessário outros passos. [verifique aqui](https://flask.palletsprojects.com/en/1.1.x/deploying/mod_wsgi/)*
 
 Siga os passos da instalação local até o **passo 3** mas mude para o arquivo `requirements.txt`
 
@@ -134,6 +134,8 @@ pip install -r requirements.txt
 ```
 
 4. Servindo a aplicação
+
+*OBS: é recomendado utilizar [Nginx](https://www.nginx.com/resources/wiki/start/topics/tutorials/install/)*
 
 ```
 gunicorn --bind 0.0.0.0:5000 wsgi:app
