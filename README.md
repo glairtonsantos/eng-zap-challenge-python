@@ -149,3 +149,11 @@ gunicorn --bind 0.0.0.0:5000 wsgi:app
 - Deploy AWS [Elastic Beanstalk](https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/create-deploy-python-flask.html)
 - Deploy AWS [EC2](https://medium.com/innovation-incubator/deploy-a-flask-app-on-aws-ec2-d1d774c275a2)
 - Deploy serverless Lambda [Zappa](https://docs.aws.amazon.com/pt_br/xray/latest/devguide/xray-sdk-python-serverless.html)
+
+
+## Atualização (Após entrega)
+
+Para rodar no docker basta executar
+```bash
+docker build -t flask/eng_zap_challenge_python . && docker run -d --name eng-zap-challenge -p 5000:5000 flask/eng_zap_challenge_python .
+```
