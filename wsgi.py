@@ -5,3 +5,6 @@ from eng_zap_challenge_python.client import source_client
 source_client.load_data_source()
 manager = Manager(create_app)
 app = create_app()
+
+if __name__ == "__main__":
+    app.run()
